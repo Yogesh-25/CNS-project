@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Spam Detector</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+
+    <style>
+          body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+      background: rgba(0, 0, 0, 1) url("{{ url_for('static', filename='img/img3.png') }}");
+
+
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+
+          #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            z-index: 1000;
+          }
+
+          #loading {
+            display: none;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+          }
+
+          #loading p {
+            font-weight: bold;
+          }
+
+          .spinner-border {
+            width: 2rem;
+            height: 2rem;
+            margin-top: 10px;
+          }
+
+          #result {
+            font-weight: bold;
+            align-items: center;
+            font-size: 45px;
+            color: rgb(44, 252, 3);
+          }
+          #email_text {
+            background: rgba(255, 55, 125, 0.5);
+            padding: 10px;
+            color: white;
+             font-size:25px;
+
+            box-shadow: 0 0 20px rgba(250, 50, 0, 1);
+          }
+          .form-group label {
+            color: yellow;
+            font-size: 30px;
+          }
+           @keyframes moveText {
+        0% {
+          transform: translateX(0);
+        }25% {
+          transform: translateX(30);
+        }
+        50% {
+          transform: translateX(60px); /* Adjust the distance of movement */
+        }
+
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      .container h1 {
+        animation: moveText 2s infinite; /* Adjust the duration of the animation */
+            color: red;
+            font-size: 40px;
+          }
+          .res p {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+             font-size:45px
+            color: rgb(44, 252, 3);
+          }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div class="container mt-5">
+      <h1 class="text-center mb-4">Email Spam Detector</h1>
+      <form id="spamForm">
+        <div class="form-group">
+          <label for="email_text">Enter Email Text:</label>
+
+          <textarea
+            id="email_text"
+            name="email_text"
+            class="form-control"
+            rows="11"
+            required
+          ></textarea>
+        </div>
+        <button type="button" onclick="checkSpam()" class="btn btn-primary">
+          Check Spam
+        </button>
+      </form>
+      <div id="loading-overlay"></div>
+      <div id="loading">
+        <p>Scanning for spam...</p>
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+      <div class="res">
+        <p id="result" class="mt-3"></p>
+      </div>
+    </div>
+
+    <script>
+      function checkSpam() {
+        var emailText = document.getElementById("email_text").value;
+        var loadingOverlay = document.getElementById("loading-overlay");
+        var loadingElement = document.getElementById("loading");
+
+        // Show loading overlay and message
+        loadingOverlay.style.display = "block";
+        loadingElement.style.display = "block";
+
+        // AJAX request to the server
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/check_spam", true);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            // Hide loading overlay and message after a longer delay (e.g., 5000 milliseconds)
+            setTimeout(function () {
+              loadingOverlay.style.display = "none";
+              loadingElement.style.display = "none";
+
+              var result = JSON.parse(xhr.responseText).result;
+              document.getElementById("result").innerHTML = result
+                ? "Spam!"
+                : "Not Spam.";
+              // Add 3D UI effects or animations here if needed
+            }, 2000); // Longer loading time (5 seconds)
+          }
+        };
+        xhr.send("email_text=" + encodeURIComponent(emailText));
+      }
+    </script>
+  </body>
+</html>
